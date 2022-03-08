@@ -27,11 +27,11 @@ var ToggleScroll =
 
 var StrongholdPokebroPcDialogModule = function(_parent)
 {
-	this.mSQHandle        = null;
+    this.mSQHandle        = null;
     this.mParent          = _parent;
 
     // assets labels
-	this.mAssets = new WorldTownScreenAssets(_parent);
+    this.mAssets = new WorldTownScreenAssets(_parent);
     this.mRoster = //for assets things
     {
         Brothers              : 0,
@@ -43,8 +43,8 @@ var StrongholdPokebroPcDialogModule = function(_parent)
     // event listener
     this.mEventListener   = null;
 
-	// generic containers
-	this.mContainer       = null;
+    // generic containers
+    this.mContainer       = null;
     this.mDialogContainer = null;
 
     // current popup dialog
@@ -56,6 +56,7 @@ var StrongholdPokebroPcDialogModule = function(_parent)
 
     // stuffs
     this.mPayDismissalWage      = false;
+    this.mSimpleRosterTooltip   = false;
     this.mPlayerRosterLimit     = 0;
     this.mStrongholdRosterLimit = 0;
     this.mSelectedBrother = 
@@ -80,6 +81,7 @@ var StrongholdPokebroPcDialogModule = function(_parent)
     this.mStripBagButton               = null;
     this.mRenameButton                 = null;
     this.mDismissButton                = null;
+    this.mTooltipButton                = null;
     this.mPlayerBrotherButton          = null;
 
     // stronghold
@@ -210,25 +212,25 @@ StrongholdPokebroPcDialogModule.prototype.isConnected = function ()
 
 StrongholdPokebroPcDialogModule.prototype.onConnection = function (_handle)
 {
-	//if (typeof(_handle) == 'string')
-	{
-		this.mSQHandle = _handle;
+    //if (typeof(_handle) == 'string')
+    {
+        this.mSQHandle = _handle;
 
         // notify listener
         if (this.mEventListener !== null && ('onModuleOnConnectionCalled' in this.mEventListener))
-		{
+        {
             this.mEventListener.onModuleOnConnectionCalled(this);
         }
-	}
+    }
 };
 
 StrongholdPokebroPcDialogModule.prototype.onDisconnection = function ()
 {
-	this.mSQHandle = null;
+    this.mSQHandle = null;
 
     // notify listener
     if (this.mEventListener !== null && ('onModuleOnDisconnectionCalled' in this.mEventListener))
-	{
+    {
         this.mEventListener.onModuleOnDisconnectionCalled(this);
     }
 };
@@ -246,8 +248,8 @@ StrongholdPokebroPcDialogModule.prototype.createDIV = function (_parentDiv)
     var tabButtonsContainer = $('<div class="l-tab-container"/>');
     this.mDialogContainer.findDialogTabContainer().append(tabButtonsContainer);
         
-	// create assets
-	this.mAssets.createDIV(tabButtonsContainer);
+    // create assets
+    this.mAssets.createDIV(tabButtonsContainer);
 
     // hide all unnecessary assets
     this.mAssets.mMoneyAsset.removeClass('display-block').addClass('display-none');
@@ -368,6 +370,19 @@ StrongholdPokebroPcDialogModule.prototype.createDIV = function (_parentDiv)
     }, '', 3);
     this.mDismissButton.bindTooltip({ contentType: 'ui-element', elementId: TooltipIdentifier.CharacterScreen.LeftPanelHeaderModule.Dismiss });
 
+    var layout = $('<div class="l-button is-roster-tooltip"/>');
+    panelLayout.append(layout);
+    this.mTooltipButton = layout.createImageButton(Path.GFX + 'ui/icons/scroll_02.png', function ()
+    {
+        self.mSimpleRosterTooltip = !self.mSimpleRosterTooltip;
+        self.notifyBackendTooltipButtonPressed(self.mSimpleRosterTooltip);
+        if(self.mSimpleRosterTooltip === false)
+            self.mTooltipButton.changeButtonImage(Path.GFX + 'ui/icons/scroll_02.png');
+        else
+            self.mTooltipButton.changeButtonImage(Path.GFX + 'ui/icons/scroll_02_sw.png');
+    }, '', 3);
+    this.mTooltipButton.bindTooltip({ contentType: 'ui-element', elementId: 'pokebro.simplerostertooltip' });
+
 
     // last button - assets brother, to display the number of player in roster, also can be pressed to move to inventory screen
     var layout = $('<div class="l-button-brother is-brothers"/>');
@@ -486,7 +501,7 @@ StrongholdPokebroPcDialogModule.prototype.destroyDIV = function ()
     this.mAssets.destroyDIV();
     this.destroyRowsDIV(this.mStatsRows);
 
-	this.mLeaveButton.remove();
+    this.mLeaveButton.remove();
     this.mLeaveButton = null;
 
     this.mSkills.ActiveSkillsRow.empty();
@@ -558,7 +573,7 @@ StrongholdPokebroPcDialogModule.prototype.bindTooltips = function ()
 
 StrongholdPokebroPcDialogModule.prototype.unbindTooltips = function ()
 {
-	this.mAssets.unbindTooltips();
+    this.mAssets.unbindTooltips();
 
     $.each(this.mStatsRows, function (_key, _value)
     {
@@ -671,7 +686,7 @@ StrongholdPokebroPcDialogModule.prototype.hide = function ()
 
     var offset = -(this.mContainer.parent().width() + this.mContainer.width());
     this.mContainer.velocity("finish", true).velocity({ opacity: 0, left: offset },
-	{
+    {
         duration: Constants.SCREEN_SLIDE_IN_OUT_DELAY,
         easing: 'swing',
         begin: function ()
@@ -681,7 +696,7 @@ StrongholdPokebroPcDialogModule.prototype.hide = function ()
         },
         complete: function ()
         {
-        	self.mIsVisible = false;
+            self.mIsVisible = false;
             $(this).removeClass('display-block').addClass('display-none');
             self.notifyBackendModuleHidden();
         }
@@ -697,19 +712,29 @@ StrongholdPokebroPcDialogModule.prototype.isVisible = function ()
 // Load the Data
 StrongholdPokebroPcDialogModule.prototype.loadFromData = function (_data)
 {
-	if(_data === undefined || _data === null)
+    if(_data === undefined || _data === null)
     {
         return;
     }
     
     if('Title' in _data && _data.Title !== null)
-	{
-		this.mDialogContainer.findDialogTitle().html(_data.Title);
-	}
+    {
+        this.mDialogContainer.findDialogTitle().html(_data.Title);
+    }
 
-	if('SubTitle' in _data && _data.SubTitle !== null)
-	{
-		this.mDialogContainer.findDialogSubTitle().html(_data.SubTitle);
+    if('SubTitle' in _data && _data.SubTitle !== null)
+    {
+        this.mDialogContainer.findDialogSubTitle().html(_data.SubTitle);
+    }
+
+    if ('SimpleTooltip' in _data && _data.SimpleTooltip !== null)
+    {
+        this.mSimpleRosterTooltip = _data.SimpleTooltip;
+
+        if(this.mSimpleRosterTooltip === false)
+            this.mTooltipButton.changeButtonImage(Path.GFX + 'ui/icons/scroll_02.png');
+        else
+            this.mTooltipButton.changeButtonImage(Path.GFX + 'ui/icons/scroll_02_sw.png');
     }
 
     if ('BrothersMax' in _data && _data.BrothersMax !== null)
@@ -1912,12 +1937,12 @@ StrongholdPokebroPcDialogModule.prototype.addBrotherSlotDIV = function(_parent, 
 
     if(_data['injuries'].length <= 2 && _data['stats'].hitpoints < _data['stats'].hitpointsMax)
     {
-    	result.assignListBrotherDaysWounded();
+        result.assignListBrotherDaysWounded();
     }
 
     // event listener when left-click the brother
     result.assignListBrotherClickHandler(function (_brother, _event)
-	{
+    {
         var data = _brother.data('brother')[CharacterScreenIdentifier.Entity.Id];
         var openPerkTree = (KeyModiferConstants.AltKey in _event && _event[KeyModiferConstants.AltKey] === true);
         var dismissBrother = (KeyModiferConstants.CtrlKey in _event && _event[KeyModiferConstants.CtrlKey] === true);
@@ -1953,22 +1978,22 @@ StrongholdPokebroPcDialogModule.prototype.onBrothersListLoaded = function (_pare
 
     _parent.NumActive = 0;   
 
-	if (_parent.BrothersList === null || !jQuery.isArray(_parent.BrothersList) || _parent.BrothersList.length === 0)
-	{
-		return;
-	}
+    if (_parent.BrothersList === null || !jQuery.isArray(_parent.BrothersList) || _parent.BrothersList.length === 0)
+    {
+        return;
+    }
 
-	for (var i = 0; i < _parent.BrothersList.length; ++i)
-	{
-	    var brother = _parent.BrothersList[i];
+    for (var i = 0; i < _parent.BrothersList.length; ++i)
+    {
+        var brother = _parent.BrothersList[i];
 
-		if (brother !== null)
-		{
+        if (brother !== null)
+        {
             this.addBrotherSlotDIV(_parent, brother, i, _tag);   
         }
     }
 
-	//this.updateRosterLabel();
+    //this.updateRosterLabel();
 };
 
 
@@ -2250,6 +2275,11 @@ StrongholdPokebroPcDialogModule.prototype.notifyBackendLeaveButtonPressed = func
 StrongholdPokebroPcDialogModule.prototype.notifyBackendBrothersButtonPressed = function ()
 {
     SQ.call(this.mSQHandle, 'onBrothersButtonPressed');
+};
+
+StrongholdPokebroPcDialogModule.prototype.notifyBackendTooltipButtonPressed = function (_data)
+{
+    SQ.call(this.mSQHandle, 'onTooltipButtonPressed', [_data]);
 };
 
 StrongholdPokebroPcDialogModule.prototype.notifyBackendTransferItems = function ()

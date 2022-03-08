@@ -84,7 +84,7 @@
 {
     top: 5.3rem;
     bottom: 0;
-	width: 100%;
+    width: 100%;
 }
 
 .world-town-screen > .l-stronghold-pokebro-pc-dialog-container .content .l-row .row.is-bottom > img
@@ -276,6 +276,11 @@
 .world-town-screen > .l-stronghold-pokebro-pc-dialog-container .content > .right-column > .middle-row > .is-right .button-panel .l-button.is-dismiss
 {
     left: 25.0rem;
+}
+
+.world-town-screen > .l-stronghold-pokebro-pc-dialog-container .content > .right-column > .middle-row > .is-right .button-panel .l-button.is-roster-tooltip
+{
+    left: 49.0rem;
 }
 
 .world-town-screen > .l-stronghold-pokebro-pc-dialog-container .content > .right-column > .middle-row > .is-right .button-panel .l-button-brother

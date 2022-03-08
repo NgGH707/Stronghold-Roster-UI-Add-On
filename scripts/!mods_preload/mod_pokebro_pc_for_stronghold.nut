@@ -3,6 +3,11 @@
 ::mods_registerJS("mod_stronghold_pokebro_pc_dialog_module.js");
 ::mods_queue("mod_pokebro_pc_for_stronghold", "mod_stronghold", function()
 {
+	if (::mods_getRegisteredMod("mod_legends") != null)
+	{
+		::mods_registerCSS("mod_additional_dialog.css");
+	}
+	
 	local gt = this.getroottable();
 	gt.Pokebro <- {};
 	gt.Pokebro.LegendExists <- ::mods_getRegisteredMod("mod_legends") != null;
@@ -322,19 +327,22 @@
 					});
 				}
 
-				local items = entity.getItems();
-				local equipment = items.getAllItemsAtSlot(this.Const.ItemSlot.Head);
-				equipment.extend(items.getAllItemsAtSlot(this.Const.ItemSlot.Body));
-				equipment.extend(items.getAllItemsAtSlot(this.Const.ItemSlot.Mainhand));
-				equipment.extend(items.getAllItemsAtSlot(this.Const.ItemSlot.Offhand));
-				this.pushSectionToTooltip(tooltip, equipment, "Equipment", 300, "ui/items/");
-				local accessories = items.getAllItemsAtSlot(this.Const.ItemSlot.Accessory);
-				this.pushSectionToTooltip(tooltip, accessories, "Accessory", 400, "ui/items/");
-				local ammos = items.getAllItemsAtSlot(this.Const.ItemSlot.Ammo);
-				this.pushSectionToTooltip(tooltip, ammos, "Ammo", 500, "ui/items/");
-				local items = items.getAllItemsAtSlot(this.Const.ItemSlot.Bag);
-				local itemsTitle = "Item(s) in bags";
-				this.pushSectionToTooltip(tooltip, items, itemsTitle, 600, "ui/items/", true);
+				if (!this.World.Flags.get("SimplifiedRosterTooltip"))
+				{
+					local items = entity.getItems();
+					local equipment = items.getAllItemsAtSlot(this.Const.ItemSlot.Head);
+					equipment.extend(items.getAllItemsAtSlot(this.Const.ItemSlot.Body));
+					equipment.extend(items.getAllItemsAtSlot(this.Const.ItemSlot.Mainhand));
+					equipment.extend(items.getAllItemsAtSlot(this.Const.ItemSlot.Offhand));
+					this.pushSectionToTooltip(tooltip, equipment, "Equipment", 300, "ui/items/");
+					local accessories = items.getAllItemsAtSlot(this.Const.ItemSlot.Accessory);
+					this.pushSectionToTooltip(tooltip, accessories, "Accessory", 400, "ui/items/");
+					local ammos = items.getAllItemsAtSlot(this.Const.ItemSlot.Ammo);
+					this.pushSectionToTooltip(tooltip, ammos, "Ammo", 500, "ui/items/");
+					local items = items.getAllItemsAtSlot(this.Const.ItemSlot.Bag);
+					local itemsTitle = "Item(s) in bags";
+					this.pushSectionToTooltip(tooltip, items, itemsTitle, 600, "ui/items/", true);
+				}
 
 				tooltip.extend([
 					{
@@ -431,6 +439,20 @@
 						text = "Transfer all items in bag of selected brother to your company stash."
 					}
 				];
+
+			case "pokebro.simplerostertooltip":
+				return [
+					{
+						id = 1,
+						type = "title",
+						text = this.World.Flags.get("SimplifiedRosterTooltip") ? "Turn [color=" + this.Const.UI.Color.NegativeValue + "]OFF[/color] Simple Roster Tooltip" : "Turn [color=" + this.Const.UI.Color.PositiveValue + "]ON[/color] Simple Roster Tooltip"
+					},
+					{
+						id = 2,
+						type = "description",
+						text = "Let you decide whether you want to see a simplified roster tooltip so it doesn\'t obstruct your view."
+					}
+				];
 	 		}
 
 	 		return ws_general_queryUIElementTooltipData(_entityId, _elementId, _elementOwner);
@@ -518,6 +540,7 @@
 		{
 			if (this.m.JSHandle != null && this.isVisible())
 			{
+				this.World.Assets.updateFormation();
 				this.m.LastActiveModule = this.m.PokebroPcDialogModule;
 				this.Tooltip.hide();
 				this.m.JSHandle.asyncCall("showPokebroPcDialog", this.m.PokebroPcDialogModule.queryLoad());

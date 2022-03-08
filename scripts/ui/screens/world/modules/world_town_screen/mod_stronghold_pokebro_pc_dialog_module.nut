@@ -45,6 +45,10 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 		this.ui_module.destroy();
 	}
 
+	function isUsingSimplifiedRosterTooltip()
+	{
+		return this.World.Flags.get("SimplifiedRosterTooltip");
+	}
 
 	function getStrongholdRosterSeed()
 	{
@@ -98,6 +102,7 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 		local result = {
 			Title = this.m.Title,
 			SubTitle = this.m.Description,
+			SimpleTooltip = this.isUsingSimplifiedRosterTooltip(),
 			Assets = {},
 		};
 		this.queryPlayerRosterInformation(result);
@@ -139,8 +144,6 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 				break;
 			}
 		}
-
-
 		 
 		while (num < roster.len())
 		{
@@ -223,7 +226,7 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 	function MoveAtoB( _data )
 	{
 		local isMovingToPlayerRoster = this.Pokebro.LegendExists && _data[3] == "roster.player";
-		local rosterA = this.getRosterWithTag(_data[1]) ;
+		local rosterA = this.getRosterWithTag(_data[1]);
 		local rosterB = this.getRosterWithTag(_data[3]);
 
 		foreach(i, bro in rosterA.getAll())
@@ -473,6 +476,11 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 		{
 			return !this.World.State.getTownScreen().isAnimating();
 		});
+	}
+
+	function onTooltipButtonPressed( _data )
+	{
+		this.World.Flags.set("SimplifiedRosterTooltip", _data[0]);
 	}
 
 	function onPopupDialogIsVisible( _data )
