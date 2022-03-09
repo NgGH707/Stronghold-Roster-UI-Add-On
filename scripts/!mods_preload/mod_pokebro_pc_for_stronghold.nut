@@ -231,6 +231,16 @@
 					text = text
 				});
 
+				if (entity.getFlags().get("IsPlayerCharacter"))
+				{
+					tooltip.push({
+						id = 5,
+						type = "text",
+						icon = "ui/traits/trait_icon_63.png",
+						text = "[color=#ffd700]PLayer Character[/color]"
+					});
+				}
+
 				if (entity.getDailyCost() != 0)
 				{
 					tooltip.push({
@@ -238,15 +248,6 @@
 						type = "text",
 						icon = "ui/icons/asset_daily_money.png",
 						text = "Paid [img]gfx/ui/tooltips/money.png[/img]" + entity.getDailyCost() + " daily"
-					});
-				}
-				else if (entity.getFlags().get("IsPlayerCharacter"))
-				{
-					tooltip.push({
-						id = 5,
-						type = "text",
-						icon = "ui/traits/trait_icon_63.png",
-						text = "[color=#ffd700]PLayer Character[/color]"
 					});
 				}
 
