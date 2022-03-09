@@ -1,6 +1,6 @@
-# UI-Stronghold-Roster-Add-On
+# Stronghold-Roster-UI-Add-On
 A mod of Battle Brother, a submod of Stronghold mod, to add a new UI
-![UI-Stronghold-Roster-Add-On](!info/display_01.jpg "NgGH-Magic-Origins-Mod repo: Have a better experience when using stronghold roster system")
+![Stronghold-Roster-UI-Add-On](!info/display_01.jpg "Stronghold-Roster-UI-Add-On repo: Have a better experience when using stronghold roster system")
 
 ## Description
 Stronghold is a great mod but one thing has been bugging me. It's the way you store/retrieve brother from stronghold, i'm not a fan of that text based UI so i made this mod to improve your experience using stronghold roster.
@@ -30,7 +30,7 @@ To install this mod you should do step-by-step:
 4. Download the latest "UI Stronghold Roster Add-on" mod.
 5. Put all the downloaded mods into the "data" directory of Battle Brothers (you should put zip without unzipping).
 6. All done, now just run the game and find this icon to open the screen.
-![Where is the button?](!info/display_02.jpg "NgGH-Magic-Origins-Mod repo: Just click on this button")
+![Where is the button?](!info/display_02.jpg "Stronghold-Roster-UI-Add-On repo: Just click on this button")
 
 ## License, Authors and Copyright
 
