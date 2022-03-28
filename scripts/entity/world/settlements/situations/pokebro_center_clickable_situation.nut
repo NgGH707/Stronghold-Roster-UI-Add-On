@@ -35,5 +35,25 @@ this.pokebro_center_clickable_situation <- this.inherit("scripts/entity/world/se
 		return 100;
 	}
 
+	function onUpdate( _modifiers )
+	{
+	}
+
+	function onUpdateShop( _stash )
+	{
+	}
+
+	function onUpdateDraftList( _draftList )
+	{
+	}
+
+	function onAdded( _settlement )
+	{
+	}
+
+	function onRemoved( _settlement )
+	{
+	}
+
 });
 
