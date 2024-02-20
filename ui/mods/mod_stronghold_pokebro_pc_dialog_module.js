@@ -761,15 +761,15 @@ StrongholdPokebroPcDialogModule.prototype.loadFromData = function (_data)
         this.onBrothersListLoaded(this.mStronghold, ModRosterOwner.Stronghold);
     }
 
-    if ('PLayer' in _data && _data.PLayer !== null)
+    if ('Player' in _data && _data.Player !== null)
     {
-        this.mPlayer.BrothersList = _data.PLayer;
+        this.mPlayer.BrothersList = _data.Player;
         this.onBrothersListLoaded(this.mPlayer, ModRosterOwner.Player);
 
         // automatically select the first brother in player roster
-        for (var i = 0; i < _data.PLayer.length; i++) 
+        for (var i = 0; i < _data.Player.length; i++) 
         {
-            var brother = _data.PLayer[i];
+            var brother = _data.Player[i];
 
             if (brother !== null)
             {
