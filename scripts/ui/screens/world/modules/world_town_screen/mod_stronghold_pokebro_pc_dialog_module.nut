@@ -1,21 +1,22 @@
-this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens/ui_module", {
+this.mod_stronghold_pokebro_pc_dialog_module <- ::inherit("scripts/ui/screens/ui_module", {
 	m = {
 		Title = "Stronghold Roster",
-		Description = "A convenient place for you to store/retrieve your brother with minimum effort"
+		Description = "A convenient place for you to store/retrieve your brothers with minimum effort"
 		PopupDialogVisible = false,
-		ItemsToTransfer = [],
 		ItemsContainerToTransfer = null,
+		ItemsToTransfer = [],
 
 		// a row can hold 11 slots so with this you have a maximum of 9 rows in the screen
 		// change to 9999 so you can feel like the roster size is endless lol
-		StrongholdRosterLimit = 165, 
+		SlotNumPerRow = 11,
+		StrongholdRosterLimit = 253, 
 	},
 	function create()
 	{
 		this.m.ID = "StrongholdPokebroPcDialogModule";
 		this.m.PopupDialogVisible = false;
-		this.m.ItemsToTransfer = [];
 		this.m.ItemsContainerToTransfer = null;
+		this.m.ItemsToTransfer = [];
 		this.ui_module.create();
 	}
 
@@ -28,16 +29,16 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 	{
 		this.ui_module.onModuleShown();
 		this.m.PopupDialogVisible = false;
-		this.m.ItemsToTransfer = [];
 		this.m.ItemsContainerToTransfer = null;
+		this.m.ItemsToTransfer = [];
 	}
 
 	function onModuleHidden()
 	{
 		this.ui_module.onModuleShown();
 		this.m.PopupDialogVisible = false;
-		this.m.ItemsToTransfer = [];
 		this.m.ItemsContainerToTransfer = null;
+		this.m.ItemsToTransfer = [];
 	}
 
 	function destroy()
@@ -47,7 +48,7 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 
 	function isUsingSimplifiedRosterTooltip()
 	{
-		return this.World.Flags.get("SimplifiedRosterTooltip");
+		return ::World.Flags.get("SimplifiedRosterTooltip");
 	}
 
 	function getStrongholdRosterSeed()
@@ -63,38 +64,28 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 	function getRosterWithTag( _tag )
 	{
 		if (_tag == "roster.player")
-		{
-			return this.World.getPlayerRoster();
-		}
+			return ::World.getPlayerRoster();
 		else
-		{
 			return this.getStrongholdRoster();
-		}
 	}
 
 	function getBroWithTagAndID( _id, _tag )
 	{
-		local bro = this.Tactical.getEntityByID(_id);
+		local bro = ::Tactical.getEntityByID(_id);
 
-		if (bro == null)
+		if (bro != null)
+			return bro;
+
+		foreach ( b in this.getRosterWithTag(_tag).getAll() )
 		{
-			foreach ( b in this.getRosterWithTag(_tag).getAll() )
-			{
-				if (b.getID() == _id)
-				{
-					bro = b;
-					break;
-				}
-			}
+			if (b.getID() != _id)
+				continue;
 
-			if (bro == null)
-			{
-				this.logError("Can\'t find the brother in the given roster");
-				return null;
-			}
+			return b;
 		}
 
-		return bro;
+		::logError(format("Can\'t find the brother with \'ID = %s\' in the given \'Roster Tag = %s\'", "" + _id + "", _tag));
+		return null;
 	}
 
 	function queryLoad()
@@ -117,42 +108,35 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 		result.Assets.No <- true;
 
 		if (_tag == "roster.player")
-		{
 			this.queryPlayerRosterInformation(result);
-		}
 		else
-		{
 			this.queryStrongholdRosterInformation(result);
-		}
 
 		this.m.JSHandle.asyncCall("loadFromData", result);
 	}
 
 	function queryStrongholdRosterInformation( _result )
 	{
-		local num = 11;
-		local roster = [];
+		local num = 0, roster = [];
 		local brothers = this.getStrongholdRoster().getAll();
 
 		foreach (i, b in brothers)
 		{
 			b.setPlaceInFormation(i);
-			roster.push(this.UIDataHelper.convertEntityToUIData(b, null));
+			roster.push(::UIDataHelper.convertEntityToUIData(b, null));
 
 			if (roster.len() == this.m.StrongholdRosterLimit)
-			{
 				break;
-			}
 		}
 		 
 		while (num < roster.len())
 		{
-			num += 11;
+			num += this.m.SlotNumPerRow;
 		}
 
-		// for now i limit the max stronghold roster size to be 165 (was 99) which is 15 roster rows, should i expand it?
+		// for now i limit the max stronghold roster size to be 253 (was 165) which is 23 roster rows, should i expand it?
 		// make it so that the stronghold roster formation automatically resize on the screen and there is always at least 33 spare spots in stronghold
-		num = this.Math.min(this.m.StrongholdRosterLimit, num + 33);
+		num = ::Math.min(this.m.StrongholdRosterLimit, num + 33);
 		
 		// fill the empty space
 		while (roster.len() < num)
@@ -172,23 +156,23 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 
 	function queryPlayerRosterInformation( _result )
 	{
-		local roster = this.World.Assets.getFormation();
+		local roster = ::World.Assets.getFormation();
 
-		for( local i = 0; i != roster.len(); i = ++i )
+		for( local i = 0; i != roster.len(); ++i )
 		{
-			if (roster[i] != null)
-			{
-				roster[i] = this.UIDataHelper.convertEntityToUIData(roster[i], null);
-			}
+			if (roster[i] == null)
+				continue;
+
+			roster[i] = ::UIDataHelper.convertEntityToUIData(roster[i], null);
 		}
 
-		_result.PLayer <- roster;
-		_result.BrothersMaxInCombat <- this.World.Assets.getBrothersMaxInCombat();
-		_result.BrothersMax <- this.World.Assets.getBrothersMax();
+		_result.Player <- roster;
+		_result.BrothersMaxInCombat <- ::World.Assets.getBrothersMaxInCombat();
+		_result.BrothersMax <- ::World.Assets.getBrothersMax();
 
 		if ("Assets" in _result)
 		{
-			_result.Assets.Brothers <- this.World.getPlayerRoster().getSize();
+			_result.Assets.Brothers <- ::World.getPlayerRoster().getSize();
 			_result.Assets.BrothersMax <- _result.BrothersMax;
 		}
 	}
@@ -196,54 +180,52 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 	// only ask for the data i need
 	function queryAssetsInformation( _assets )
 	{
-		_assets.Brothers <- this.World.getPlayerRoster().getSize();
-		_assets.BrothersMax <- this.World.Assets.getBrothersMax();
+		_assets.Brothers <- ::World.getPlayerRoster().getSize();
+		_assets.BrothersMax <- ::World.Assets.getBrothersMax();
 		_assets.StrongholdBrothers <- this.getStrongholdRoster().getSize();
 		_assets.StrongholdBrothersMax <- this.m.StrongholdRosterLimit;
 	}
 
 	function onUpdateRosterPosition( _data )
 	{
-		foreach ( bro in this.World.getPlayerRoster().getAll())
+		foreach ( bro in ::World.getPlayerRoster().getAll())
 		{
-		 	if (bro.getID() == _data[0])
-		 	{
-		 		bro.setPlaceInFormation(_data[1]);
-		 		return;
-		 	}
+		 	if (bro.getID() != _data[0])
+		 		continue;
+
+		 	bro.setPlaceInFormation(_data[1]);
+		 	return;
 		}
 
 		foreach ( bro in this.getStrongholdRoster().getAll())
 		{
-		 	if (bro.getID() == _data[0])
-		 	{
-		 		bro.setPlaceInFormation(_data[1]);
-		 		return;
-		 	}
+		 	if (bro.getID() != _data[0])
+		 		continue;
+		 	
+		 	bro.setPlaceInFormation(_data[1]);
+		 	return;
 		}
 	}
 
 	function MoveAtoB( _data )
 	{
-		local isMovingToPlayerRoster = this.Pokebro.LegendExists && _data[3] == "roster.player";
+		local isMovingToPlayerRoster = ::Pokebro.LegendExists && _data[3] == "roster.player";
 		local rosterA = this.getRosterWithTag(_data[1]);
 		local rosterB = this.getRosterWithTag(_data[3]);
 
 		foreach(i, bro in rosterA.getAll())
 		{
-			if (bro.getID() == _data[0])
-			{
-				rosterB.add(bro);
-				rosterA.remove(bro);
+			if (bro.getID() != _data[0])
+				continue;
 
-				if (isMovingToPlayerRoster && this.World.State.getBrothersInFrontline() > this.World.Assets.getBrothersMaxInCombat())
-				{
-					bro.setInReserves(true);
-				}
-				
-				bro.setPlaceInFormation(_data[2]);
-				break;
-			}
+			rosterB.add(bro);
+			rosterA.remove(bro);
+
+			if (isMovingToPlayerRoster && ::World.State.getBrothersInFrontline() > ::World.Assets.getBrothersMaxInCombat())
+				bro.setInReserves(true);
+			
+			bro.setPlaceInFormation(_data[2]);
+			break;
 		}
 		
 		local ret = {};
@@ -262,84 +244,71 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 		if (bro != null)
 		{
 			bro.getSkills().onDismiss();
-			this.World.Statistics.getFlags().increment("BrosDismissed");
+			::World.Statistics.getFlags().increment("BrosDismissed");
 
-			if (bro.getSkills().hasSkillOfType(this.Const.SkillType.PermanentInjury) && (bro.getBackground().getID() != "background.slave" || this.World.Assets.getOrigin().getID() == "scenario.sato_escaped_slaves"))
-			{
-				this.World.Statistics.getFlags().increment("BrosWithPermanentInjuryDismissed");
-			}
+			if (bro.getSkills().hasSkillOfType(::Const.SkillType.PermanentInjury) && (bro.getBackground().getID() != "background.slave" || ::World.Assets.getOrigin().getID() == "scenario.sato_escaped_slaves"))
+				::World.Statistics.getFlags().increment("BrosWithPermanentInjuryDismissed");
 
 			if (payCompensation)
 			{
-				this.World.Assets.addMoney(-10 * this.Math.max(1, bro.getDaysWithCompany()));
+				::World.Assets.addMoney(-10 * ::Math.max(1, bro.getDaysWithCompany()));
 
 				if (bro.getBackground().getID() == "background.slave")
 				{
-					local playerRoster = this.World.getPlayerRoster().getAll();
+					local playerRoster = ::World.getPlayerRoster().getAll();
 
 					foreach( other in playerRoster )
 					{
 						if (bro.getID() == other.getID())
-						{
 							continue;
-						}
 
 						if (other.getBackground().getID() == "background.slave")
-						{
-							other.improveMood(this.Const.MoodChange.SlaveCompensated, "Glad to see " + bro.getName() + " get reparations for his time");
-						}
+							other.improveMood(::Const.MoodChange.SlaveCompensated, "Glad to see " + bro.getName() + " get reparations for his time");
 					}
 				}
 			}
 			else if (bro.getBackground().getID() == "background.slave")
 			{
 			}
-			else if (bro.getLevel() >= 11 && !this.World.Statistics.hasNews("dismiss_legend") && this.World.getPlayerRoster().getSize() > 1)
+			else if (bro.getLevel() >= 11 && !::World.Statistics.hasNews("dismiss_legend") && ::World.getPlayerRoster().getSize() > 1)
 			{
-				local news = this.World.Statistics.createNews();
+				local news = ::World.Statistics.createNews();
 				news.set("Name", bro.getName());
-				this.World.Statistics.addNews("dismiss_legend", news);
+				::World.Statistics.addNews("dismiss_legend", news);
 			}
-			else if (bro.getDaysWithCompany() >= 50 && !this.World.Statistics.hasNews("dismiss_veteran") && this.World.getPlayerRoster().getSize() > 1 && this.Math.rand(1, 100) <= 33)
+			else if (bro.getDaysWithCompany() >= 50 && !::World.Statistics.hasNews("dismiss_veteran") && ::World.getPlayerRoster().getSize() > 1 && ::Math.rand(1, 100) <= 33)
 			{
-				local news = this.World.Statistics.createNews();
+				local news = ::World.Statistics.createNews();
 				news.set("Name", bro.getName());
-				this.World.Statistics.addNews("dismiss_veteran", news);
+				::World.Statistics.addNews("dismiss_veteran", news);
 			}
-			else if (bro.getLevel() >= 3 && bro.getSkills().hasSkillOfType(this.Const.SkillType.PermanentInjury) && !this.World.Statistics.hasNews("dismiss_injured") && this.World.getPlayerRoster().getSize() > 1 && this.Math.rand(1, 100) <= 33)
+			else if (bro.getLevel() >= 3 && bro.getSkills().hasSkillOfType(::Const.SkillType.PermanentInjury) && !::World.Statistics.hasNews("dismiss_injured") && ::World.getPlayerRoster().getSize() > 1 && ::Math.rand(1, 100) <= 33)
 			{
-				local news = this.World.Statistics.createNews();
+				local news = ::World.Statistics.createNews();
 				news.set("Name", bro.getName());
-				this.World.Statistics.addNews("dismiss_injured", news);
+				::World.Statistics.addNews("dismiss_injured", news);
 			}
 			else if (bro.getDaysWithCompany() >= 7)
 			{
-				local playerRoster = this.World.getPlayerRoster().getAll();
+				local playerRoster = ::World.getPlayerRoster().getAll();
 
 				foreach( other in playerRoster )
 				{
 					if (bro.getID() == other.getID())
-					{
 						continue;
-					}
 
 					if (bro.getDaysWithCompany() >= 50)
-					{
-						other.worsenMood(this.Const.MoodChange.VeteranDismissed, "Dismissed " + bro.getName());
-					}
+						other.worsenMood(::Const.MoodChange.VeteranDismissed, "Dismissed " + bro.getName());
 					else
-					{
-						other.worsenMood(this.Const.MoodChange.BrotherDismissed, "Dismissed " + bro.getName());
-					}
+						other.worsenMood(::Const.MoodChange.BrotherDismissed, "Dismissed " + bro.getName());
 				}
 			}
-			bro.getItems().transferToStash(this.World.Assets.getStash());
+
+			bro.getItems().transferToStash(::World.Assets.getStash());
 			roster.remove(bro);
 
-			if (this.Pokebro.LegendExists)
-			{
-				this.World.State.getPlayer().calculateModifiers();
-			}
+			if (::Pokebro.LegendExists)
+				::World.State.getPlayer().calculateModifiers();
 			
 			this.loadRosterWithTag(_data[2]);
 		}
@@ -351,17 +320,15 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 
 		if (bro == null)
 		{
-			this.logError("Can\'t find the brother to chance Name and Title");
+			::logError("Can\'t find the brother to change Name and Title");
 			return null;
 		}
 		
 		if (_data[1].len() >= 1)
-		{
 			bro.setName(_data[1]);
-		}
 
 		bro.setTitle(_data[2]);
-		return this.UIDataHelper.convertEntityToUIData(bro, null);
+		return ::UIDataHelper.convertEntityToUIData(bro, null);
 	}
 
 	function onCheckCanTransferItems( _data )
@@ -370,12 +337,11 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 
 		if (bro == null)
 		{
-			this.logError("Can\'t find the brother to Check Transfer Items");
+			::logError("Can\'t find the brother to Check Transfer Items");
 			return null;
 		}
 
-		local items = bro.getItems();
-		local find = [];
+		local find = [], items = bro.getItems(), freeSlots = ::World.Assets.getStash().getNumberOfEmptySlots();
 
 		switch(_data[1])
 		{
@@ -384,18 +350,18 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 			break;
 
 		case "weapon":
-			find.extend(items.getAllItemsAtSlot(this.Const.ItemSlot.Mainhand));
-			find.extend(items.getAllItemsAtSlot(this.Const.ItemSlot.Offhand));
+			find.extend(items.getAllItemsAtSlot(::Const.ItemSlot.Mainhand));
+			find.extend(items.getAllItemsAtSlot(::Const.ItemSlot.Offhand));
 			break;
 
 		case "armor":
-			find.extend(items.getAllItemsAtSlot(this.Const.ItemSlot.Head));
-			find.extend(items.getAllItemsAtSlot(this.Const.ItemSlot.Body));
-			find.extend(items.getAllItemsAtSlot(this.Const.ItemSlot.Accessory));
+			find.extend(items.getAllItemsAtSlot(::Const.ItemSlot.Head));
+			find.extend(items.getAllItemsAtSlot(::Const.ItemSlot.Body));
+			find.extend(items.getAllItemsAtSlot(::Const.ItemSlot.Accessory));
 			break;
 
 		case "bag":
-			find.extend(items.getAllItemsAtSlot(this.Const.ItemSlot.Bag));
+			find.extend(items.getAllItemsAtSlot(::Const.ItemSlot.Bag));
 			break;
 
 		default:
@@ -406,82 +372,68 @@ this.mod_stronghold_pokebro_pc_dialog_module <- this.inherit("scripts/ui/screens
 		}
 
 		if (find.len() == 0)
-		{
 			return {
 				Result = false,
 				NoItem = true,
-			}
-		}
-
-		local stash = this.World.Assets.getStash();
-		local freeSlots = stash.getNumberOfEmptySlots();
-		local ret = {
+			};
+		
+		this.m.ItemsToTransfer = [];
+		this.m.ItemsToTransfer.extend(find);
+		this.m.ItemsContainerToTransfer = typeof items == "instance" ? items : ::WeakTableRef(items);
+		return {
 			ID = bro.getID(),
 			Tag = _data[2],
 			ItemsNum = find.len(),
 			StashNum = freeSlots,
 			Result = find.len() <= freeSlots
 		};
-
-		this.m.ItemsToTransfer = [];
-		this.m.ItemsToTransfer.extend(find);
-		this.m.ItemsContainerToTransfer = null;
-		this.m.ItemsContainerToTransfer = items;
-		return ret;
 	}
 
 	function onTransferItems()
 	{
 		local toTransfer = [];
-		local stash = this.World.Assets.getStash();
+		local stash = ::World.Assets.getStash();
 		local bro = this.m.ItemsContainerToTransfer.getActor();
 
 		foreach( item in this.m.ItemsToTransfer)
 		{
 			if (item.isEquipped())
-			{
 				this.m.ItemsContainerToTransfer.unequip(item);
-			}
 			else
-			{
 				this.m.ItemsContainerToTransfer.removeFromBag(item);
-			}
 
 			toTransfer.push(item);
 		}
 
 		foreach( item in toTransfer )
 		{
-			if (stash.add(item) == null)
-			{
-				break;
-			}
+			if (stash.add(item) != null)
+				continue;
+
+			// stop the transfering when there is no space to store the item
+			break;
 		}
 
 		if (typeof bro == "instance")
-		{
 			bro = bro.get();
-		}
 		
 		this.m.ItemsToTransfer = [];
 		this.m.ItemsContainerToTransfer = null;
-		this.m.JSHandle.asyncCall("updateSelectedBrother", this.UIDataHelper.convertEntityToUIData(bro, null));
+		this.m.JSHandle.asyncCall("updateSelectedBrother", ::UIDataHelper.convertEntityToUIData(bro, null));
 	}
 
 	function pushUIMenuStack()
 	{
-		this.World.State.getMenuStack().push(function ()
-		{
-			this.World.State.getTownScreen().showMainDialog();
-		}, function ()
-		{
-			return !this.World.State.getTownScreen().isAnimating();
+		::World.State.getMenuStack().push(function() {
+			::World.State.getTownScreen().showMainDialog();
+		}, function() {
+			return !::World.State.getTownScreen().isAnimating();
 		});
 	}
 
 	function onTooltipButtonPressed( _data )
 	{
-		this.World.Flags.set("SimplifiedRosterTooltip", _data[0]);
+		::World.Flags.set("SimplifiedRosterTooltip", _data[0]);
 	}
 
 	function onPopupDialogIsVisible( _data )
